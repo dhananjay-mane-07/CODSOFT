@@ -1,0 +1,6 @@
+POST /api/auth/login
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
