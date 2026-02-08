@@ -5,4 +5,8 @@ router.get("/", (req, res) => {
   res.json({ message: "Backend working!" });
 });
 
+router.get("/protected", (req, res) => {
+  res.json({ message: "Access granted!" });
+});
+
 module.exports = router;
