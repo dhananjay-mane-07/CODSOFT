@@ -3,7 +3,8 @@ const router = express.Router();
 const Job = require("../models/Job");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// create job 
+
+// 🔹 Create job
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
     const { title, company, location } = req.body;
@@ -24,8 +25,51 @@ router.post("/", authMiddleware, async (req, res, next) => {
     res.status(201).json(job);
 
   } catch (err) {
-    next(err); // send to error middleware
+    next(err);
   }
 });
+
+
+// 🔹 Search + filter jobs
+router.get("/", async (req, res, next) => {
+  try {
+    const { keyword, location } = req.query;
+
+    const query = {};
+
+    if (keyword) {
+      query.title = { $regex: keyword, $options: "i" };
+    }
+
+    if (location) {
+      query.location = { $regex: location, $options: "i" };
+    }
+
+    const jobs = await Job.find(query).populate("createdBy", "email");
+
+    res.json(jobs);
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/:id", async (req, res, next) => {
+  try {
+    const job = await Job.findById(req.params.id)
+      .populate("createdBy", "email");
+
+    if (!job) {
+      res.status(404);
+      throw new Error("Job not found");
+    }
+
+    res.json(job);
+
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 module.exports = router;
