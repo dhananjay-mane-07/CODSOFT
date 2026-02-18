@@ -1,38 +1,39 @@
 import { useEffect, useState } from "react";
-import API from "../services/api";
+import { getJobs, applyToJob } from "../services/api";
 
-export default function Jobs() {
+
+function Jobs() {
   const [jobs, setJobs] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchJobs = async () => {
-      const res = await API.get("/jobs");
-      setJobs(res.data);
+      const data = await getJobs();
+      setJobs(data);
     };
     fetchJobs();
   }, []);
 
-  const applyToJob = async (jobId) => {
-    try {
-      await API.post(`/applications/${jobId}`, {
-        resumeUrl: "https://myresume.com"
-      });
-      alert("Applied successfully");
-    } catch {
-      alert("Application failed");
+  const handleApply = async (jobId) => {
+    if (!token) {
+      alert("Please login first");
+      return;
     }
+
+    const resumeUrl = prompt("Enter resume URL");
+    await applyToJob(jobId, resumeUrl, token);
+    alert("Applied successfully!");
   };
 
   return (
-    <div>
-      <h2>Job Listings</h2>
+    <div className="container">
+      <h2>Available Jobs</h2>
 
-      {jobs.map(job => (
-        <div key={job._id}>
+      {jobs.map((job) => (
+        <div key={job._id} className="job-card">
           <h3>{job.title}</h3>
           <p>{job.company}</p>
-          <p>{job.location}</p>
-          <button onClick={() => applyToJob(job._id)}>
+          <button onClick={() => handleApply(job._id)}>
             Apply
           </button>
         </div>
@@ -40,3 +41,5 @@ export default function Jobs() {
     </div>
   );
 }
+
+export default Jobs;
