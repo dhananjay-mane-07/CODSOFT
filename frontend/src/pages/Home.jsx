@@ -6,14 +6,6 @@ function Home() {
 
   return (
     <>
-      <nav className="navbar">
-        <h2 className="logo">Job Board</h2>
-        <div>
-          <Link to="/">Home</Link>
-          <Link to="/jobs">Browse Jobs</Link>
-          <Link to="/login">Login</Link>
-        </div>
-      </nav>
 
       <section className="hero">
         <div className="hero-left">

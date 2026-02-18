@@ -3,25 +3,18 @@ import { getMyApplications } from "../services/api";
 
 function MyApplications() {
   const [applications, setApplications] = useState([]);
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchApplications = async () => {
-      const data = await getMyApplications(token);
-      setApplications(data);
-    };
-    fetchApplications();
+    getMyApplications().then(res => setApplications(res.data));
   }, []);
 
   return (
-    <div className="container">
+    <div>
       <h2>My Applications</h2>
-
-      {applications.map((app) => (
-        <div key={app._id} className="job-card">
+      {applications.map(app => (
+        <div key={app._id}>
           <h3>{app.job.title}</h3>
-          <p>{app.job.company}</p>
-          <p>Resume: {app.resumeUrl}</p>
+          <p>Status: {app.status}</p>
         </div>
       ))}
     </div>

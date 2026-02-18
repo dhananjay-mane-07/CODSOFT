@@ -14,16 +14,25 @@ function Jobs() {
     fetchJobs();
   }, []);
 
-  const handleApply = async (jobId) => {
-    if (!token) {
-      alert("Please login first");
-      return;
-    }
+const handleApply = async (jobId) => {
+  const token = localStorage.getItem("token");
 
-    const resumeUrl = prompt("Enter resume URL");
+  if (!token) {
+    alert("Please login first");
+    return;
+  }
+
+  const resumeUrl = prompt("Enter resume URL");
+
+  try {
     await applyToJob(jobId, resumeUrl, token);
     alert("Applied successfully!");
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Application failed");
+  }
+};
+
 
   return (
     <div className="container">
@@ -34,7 +43,7 @@ function Jobs() {
           <h3>{job.title}</h3>
           <p>{job.company}</p>
           <button onClick={() => handleApply(job._id)}>
-            Apply
+            Apply Now
           </button>
         </div>
       ))}
