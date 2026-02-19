@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizCraft — Build & Play Quizzes</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">Quiz<span>Craft</span></a>
+  <div class="nav-links" id="nav-links">
+    <button class="nav-btn ghost" onclick="showPage('browse')">Browse Quizzes</button>
+    <div id="nav-auth-buttons">
+      <button class="nav-btn ghost" onclick="openModal('login')">Log In</button>
+      <button class="nav-btn primary" onclick="openModal('register')">Sign Up</button>
+    </div>
+    <div id="nav-user-menu" class="user-menu" style="display:none">
+      <button class="nav-btn primary" onclick="showPage('create')" style="margin-right:0.5rem">+ Create Quiz</button>
+      <div class="user-avatar" id="user-avatar" onclick="toggleDropdown()">?</div>
+      <div class="dropdown" id="user-dropdown">
+        <button class="dropdown-item" onclick="showPage('my-quizzes'); toggleDropdown()">📋 My Quizzes</button>
+        <button class="dropdown-item" onclick="logout()">🚪 Log Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ── Auth Modal ── -->
+<div class="modal-overlay" id="auth-modal" onclick="closeModalOutside(event)">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-header">
+      <h2>Welcome to QuizCraft</h2>
+      <p>Sign in or create an account to get started</p>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-login" onclick="switchTab('login')">Log In</button>
+      <button class="modal-tab" id="tab-register" onclick="switchTab('register')">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" id="login-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" id="login-password" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="login()">Log In</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" class="form-control" id="reg-username" placeholder="coolquizmaster" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" id="reg-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" id="reg-password" placeholder="Min. 6 characters" />
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="register()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOME PAGE ── -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div>
+        <div class="hero-badge">🎯 Free Quiz Platform</div>
+        <h1>Create, Share &<br><span class="accent">Play</span> Quizzes<br>Like a <span class="accent2">Pro</span></h1>
+        <p>Build engaging quizzes in minutes. Challenge your friends, test your knowledge, and track your progress across any topic.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="showPage('browse')">🔍 Browse Quizzes</button>
+          <button class="btn btn-secondary" onclick="requireAuthThen(() => showPage('create'))">✏️ Create Quiz</button>
+        </div>
+        <div class="hero-stats" id="hero-stats">
+          <div class="stat"><div class="stat-num" id="stat-quizzes">0</div><div class="stat-label">Quizzes Made</div></div>
+          <div class="stat"><div class="stat-num" id="stat-questions">0</div><div class="stat-label">Questions</div></div>
+          <div class="stat"><div class="stat-num" id="stat-plays">0</div><div class="stat-label">Plays</div></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card featured">
+          <div class="card-icon">🧠</div>
+          <h4>Smart Quiz Builder</h4>
+          <p>Create professional quizzes with multiple choice, explanations, time limits, and difficulty settings</p>
+        </div>
+        <div class="hero-card">
+          <div class="card-icon orange">⚡</div>
+          <h4>Instant Results</h4>
+          <p>Get detailed feedback after every question</p>
+        </div>
+        <div class="hero-card">
+          <div class="card-icon yellow">📊</div>
+          <h4>Track Progress</h4>
+          <p>Review scores and quiz history</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured quizzes on home -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">Recent Quizzes</h2>
+      <button class="btn btn-secondary" onclick="showPage('browse')" style="padding:0.6rem 1.2rem;font-size:0.9rem">View All →</button>
+    </div>
+    <div class="quiz-grid" id="home-quizzes">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BROWSE PAGE ── -->
+<div class="page" id="page-browse">
+  <div class="section">
+    <h1 class="section-title" style="margin-bottom:1.5rem">Browse Quizzes</h1>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search quizzes..." id="search-input" oninput="debounceSearch()" />
+    </div>
+    <div class="filters" id="category-filters">
+      <button class="filter-btn active" data-cat="All" onclick="filterCategory(this,'All')">All</button>
+      <button class="filter-btn" data-cat="General" onclick="filterCategory(this,'General')">General</button>
+      <button class="filter-btn" data-cat="Science" onclick="filterCategory(this,'Science')">Science</button>
+      <button class="filter-btn" data-cat="History" onclick="filterCategory(this,'History')">History</button>
+      <button class="filter-btn" data-cat="Technology" onclick="filterCategory(this,'Technology')">Technology</button>
+      <button class="filter-btn" data-cat="Sports" onclick="filterCategory(this,'Sports')">Sports</button>
+      <button class="filter-btn" data-cat="Entertainment" onclick="filterCategory(this,'Entertainment')">Entertainment</button>
+      <button class="filter-btn" data-cat="Math" onclick="filterCategory(this,'Math')">Math</button>
+      <button class="filter-btn" data-cat="Geography" onclick="filterCategory(this,'Geography')">Geography</button>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" data-diff="All" onclick="filterDifficulty(this,'All')">All Levels</button>
+      <button class="filter-btn" data-diff="Easy" onclick="filterDifficulty(this,'Easy')">Easy</button>
+      <button class="filter-btn" data-diff="Medium" onclick="filterDifficulty(this,'Medium')">Medium</button>
+      <button class="filter-btn" data-diff="Hard" onclick="filterDifficulty(this,'Hard')">Hard</button>
+    </div>
+    <div class="quiz-grid" id="browse-quizzes">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CREATE PAGE ── -->
+<div class="page" id="page-create">
+  <div class="form-container">
+    <h1 style="margin-bottom:2rem;font-size:2rem">Create a Quiz</h1>
+
+    <div class="form-card">
+      <h2>Quiz Details</h2>
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" class="form-control" id="quiz-title" placeholder="e.g., Ultimate Science Trivia" maxlength="100" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" id="quiz-desc" placeholder="What's this quiz about?" maxlength="500"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select class="form-control" id="quiz-category">
+            <option value="General">General</option>
+            <option value="Science">Science</option>
+            <option value="History">History</option>
+            <option value="Technology">Technology</option>
+            <option value="Sports">Sports</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Geography">Geography</option>
+            <option value="Math">Math</option>
+            <option value="Language">Language</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select class="form-control" id="quiz-difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Time Limit (minutes, 0 = no limit)</label>
+        <input type="number" class="form-control" id="quiz-time" value="0" min="0" max="120" />
+      </div>
+    </div>
+
+    <div id="questions-container"></div>
+
+    <button class="btn btn-secondary" onclick="addQuestion()" style="width:100%;margin-bottom:1rem">
+      + Add Question
+    </button>
+
+    <button class="btn btn-primary" onclick="submitQuiz()" style="width:100%">
+      🚀 Publish Quiz
+    </button>
+  </div>
+</div>
+
+<!-- ── MY QUIZZES PAGE ── -->
+<div class="page" id="page-my-quizzes">
+  <div class="section">
+    <div class="section-header">
+      <h1 class="section-title">My Quizzes</h1>
+      <button class="btn btn-primary" onclick="showPage('create')">+ Create New</button>
+    </div>
+    <div class="quiz-grid" id="my-quizzes-grid">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAKE QUIZ PAGE ── -->
+<div class="page" id="page-take">
+  <div class="quiz-take-container">
+    <div class="quiz-header-bar">
+      <div class="quiz-progress-info">
+        <span id="take-quiz-title" style="font-family:'Syne',sans-serif;font-weight:700"></span>
+        <div style="display:flex;align-items:center;gap:1rem">
+          <span id="question-counter" style="font-size:0.85rem;color:var(--gray)"></span>
+          <div class="timer" id="timer" style="display:none">⏱ <span id="timer-display"></span></div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <!-- Question rendered here -->
+    </div>
+
+    <div class="quiz-nav" style="margin-top:1.5rem">
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()" style="display:none">← Prev</button>
+      <span></span>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULTS PAGE ── -->
+<div class="page" id="page-results">
+  <div class="results-container">
+    <div class="score-circle" id="score-circle">
+      <div class="score-num" id="score-pct">0%</div>
+      <div class="score-label" id="score-raw"></div>
+    </div>
+    <h2 class="score-message" id="score-message"></h2>
+    <p class="score-sub" id="score-sub"></p>
+
+    <div class="result-breakdown" id="result-breakdown"></div>
+
+    <div class="result-actions">
+      <button class="btn btn-secondary" onclick="showPage('browse')">🔍 More Quizzes</button>
+      <button class="btn btn-primary" id="retake-btn">🔄 Retake</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
