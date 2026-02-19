@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import "../App.css";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -6,25 +7,40 @@ function Navbar() {
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   return (
     <nav className="navbar">
-      <h2>Job Portal</h2>
+      <div className="logo">Job Portal</div>
 
-      <div>
-        <Link to="/">Home</Link>
-        <Link to="/jobs">Jobs</Link>
+      <div className="nav-links">
+        <NavLink to="/" className={({ isActive }) => isActive ? "active" : ""}>
+          Home
+        </NavLink>
+
+        <NavLink to="/jobs" className={({ isActive }) => isActive ? "active" : ""}>
+          Jobs
+        </NavLink>
 
         {token ? (
           <>
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/my-applications">My Applications</Link>
-            <button onClick={logout}>Logout</button>
+            <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+              Dashboard
+            </NavLink>
+
+            <NavLink to="/my-applications" className={({ isActive }) => isActive ? "active" : ""}>
+              My Applications
+            </NavLink>
+
+            <button className="logout-btn" onClick={logout}>
+              Logout
+            </button>
           </>
         ) : (
-          <Link to="/login">Login</Link>
+          <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>
+            Login
+          </NavLink>
         )}
       </div>
     </nav>

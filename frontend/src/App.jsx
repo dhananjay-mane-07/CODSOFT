@@ -7,6 +7,7 @@ import MyApplications from "./pages/MyApplications";
 import "./App.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import Register from "./pages/Register";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -14,7 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      
+
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -35,6 +36,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        <Route path="/register" element={<Register />} />
+
       </Routes>
     </BrowserRouter>
   );

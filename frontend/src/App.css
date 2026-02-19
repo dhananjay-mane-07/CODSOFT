@@ -8,6 +8,11 @@
 
 body {
   background: #f1f5f9;
+  color: #0f172a;
+}
+
+a {
+  text-decoration: none;
 }
 
 /* ===== NAVBAR ===== */
@@ -20,10 +25,19 @@ body {
   align-items: center;
 }
 
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
 .navbar a {
   color: white;
-  margin-left: 25px;
-  text-decoration: none;
   font-weight: 500;
 }
 
@@ -31,9 +45,13 @@ body {
   color: #38bdf8;
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: bold;
+.logout-btn {
+  background: #ef4444;
+  border: none;
+  padding: 8px 14px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* ===== HERO SECTION ===== */
@@ -66,6 +84,11 @@ body {
   opacity: 0.9;
 }
 
+.hero-right img {
+  width: 260px;
+}
+
+/* ===== BUTTONS ===== */
 .primary-btn {
   background: #22c55e;
   border: none;
@@ -78,10 +101,6 @@ body {
 
 .primary-btn:hover {
   background: #16a34a;
-}
-
-.hero-right img {
-  width: 260px;
 }
 
 /* ===== SEARCH BOX ===== */
@@ -114,4 +133,347 @@ body {
 
 .search-box button:hover {
   background: #1d4ed8;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ===== JOB LIST ===== */
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.job-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.job-info h3 {
+  margin-bottom: 5px;
+}
+
+.job-info p {
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.job-info span {
+  font-size: 14px;
+  color: gray;
+}
+
+.apply-btn {
+  padding: 10px 18px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.apply-btn:hover {
+  background: #1e40af;
+}
+
+/* ===== AUTH PAGES ===== */
+.auth-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-card {
+  width: 350px;
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.auth-card input,
+.auth-card select {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.auth-link {
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.dashboard form {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.dashboard h2 {
+  margin-bottom: 10px;
+}
+
+/* ACTIVE NAV TAB */
+.nav-links a {
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.nav-links a.active {
+  background: #2563eb;
+  color: white;
+}
+
+.nav-links a:hover {
+  background: #1e40af;
+  color: white;
+}
+
+/* CENTER MESSAGE */
+.center-msg {
+  text-align: center;
+  margin-top: 40px;
+  color: #555;
+}
+
+/* JOB LIST */
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* JOB CARD */
+.job-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: 0.2s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+/* JOB INFO */
+.job-info h3 {
+  font-size: 20px;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.company {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.location {
+  margin: 4px 0;
+  color: #555;
+}
+
+.posted-by {
+  font-size: 13px;
+  color: gray;
+}
+
+/* ACTIONS */
+.job-actions {
+  display: flex;
+  align-items: center;
+}
+
+.apply-btn {
+  padding: 12px 20px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.apply-btn:hover {
+  transform: scale(1.05);
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard-container {
+  max-width: 900px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.dashboard-card h2 {
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+/* POST JOB FORM */
+.post-job-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.post-job-form input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+/* POSTED BADGE */
+.posted-badge {
+  background: #22c55e;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.secondary-btn {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.secondary-btn:hover {
+  background: #0284c7;
+}
+
+/* APPLICANTS */
+.applicant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.applicant-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+/* ===== APPLICATION PAGE ===== */
+
+.application-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.application-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.application-card:hover {
+  transform: translateY(-2px);
+}
+
+.application-info h3 {
+  margin-bottom: 4px;
+}
+
+.application-info .company {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.application-info .location {
+  font-size: 14px;
+  color: gray;
+}
+
+.application-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.center-msg {
+  text-align: center;
+  color: gray;
+  margin-top: 10px;
 }

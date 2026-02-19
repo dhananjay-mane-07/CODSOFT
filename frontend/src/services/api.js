@@ -1,6 +1,6 @@
 const API_BASE = "http://localhost:5000/api";
 
-// helper to get token from localStorage
+// get token from localStorage
 const getToken = () => localStorage.getItem("token");
 
 // reusable request function
@@ -23,12 +23,6 @@ const request = async (url, options = {}) => {
   return data;
 };
 
-
-
-
-
-// ================= AUTH =================
-
 // login user
 export const loginUser = (email, password) =>
   request("/auth/login", {
@@ -37,35 +31,26 @@ export const loginUser = (email, password) =>
   });
 
 // register user
-export const registerUser = (name, email, password) =>
+export const registerUser = (name, email, password, role = "student") =>
   request("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, role }),
   });
-
-
-
-
-
-// ================= JOBS =================
 
 // get all jobs
 export const getJobs = () => request("/jobs");
 
-// create job (optional if recruiter role exists)
+// create job (employer)
 export const createJob = (jobData) =>
   request("/jobs", {
     method: "POST",
     body: JSON.stringify(jobData),
   });
 
+// get jobs posted by logged-in user
+export const getMyJobs = () => request("/jobs/my");
 
-
-
-
-// ================= APPLICATIONS =================
-
-// apply to a job
+// apply to job
 export const applyToJob = (jobId, resumeUrl) =>
   request(`/applications/${jobId}`, {
     method: "POST",
@@ -75,3 +60,8 @@ export const applyToJob = (jobId, resumeUrl) =>
 // get my applications
 export const getMyApplications = () =>
   request("/applications/my");
+
+export const getApplicantsByJob = async (jobId) => {
+  return request(`/applications/job/${jobId}`);
+};
+
