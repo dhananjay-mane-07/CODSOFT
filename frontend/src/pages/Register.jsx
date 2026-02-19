@@ -72,7 +72,7 @@ function Register() {
         />
 
         <select name="role" onChange={handleChange}>
-          <option value="student">Student</option>
+          <option value="candidate">Candidate</option>
           <option value="employer">Employer</option>
         </select>
 
