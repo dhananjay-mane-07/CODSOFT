@@ -157,14 +157,18 @@ async function loadBrowseQuizzes() {
   const container = document.getElementById('browse-quizzes');
   container.innerHTML = '<div class="spinner"></div>';
   const { category, difficulty, search } = browseFilters;
-  const params = new URLSearchParams({ limit: 20 });
+  const params = new URLSearchParams({ limit: 50 });
   if (category !== 'All') params.set('category', category);
   if (difficulty !== 'All') params.set('difficulty', difficulty);
   if (search) params.set('search', search);
   try {
-    const data = await api('GET', `/quizzes?${params}`);
+    const data = await api('GET', '/quizzes?' + params.toString());
+    console.log('Browse quizzes response:', data);
     renderQuizGrid(container, data.quizzes);
-  } catch (e) { container.innerHTML = '<p style="color:var(--gray);text-align:center">Failed to load quizzes</p>'; }
+  } catch (e) {
+    console.error('Browse load error:', e);
+    container.innerHTML = '<p style="color:#ef4444;text-align:center;padding:2rem">Error: ' + e.message + '</p>';
+  }
 }
 
 async function loadMyQuizzes() {
