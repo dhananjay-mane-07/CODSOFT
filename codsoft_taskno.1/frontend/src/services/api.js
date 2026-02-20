@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://codsoft-q1jf.onrender.com/api";
 
 // get token from localStorage
 const getToken = () => localStorage.getItem("token");
