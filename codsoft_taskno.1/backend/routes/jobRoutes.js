@@ -3,11 +3,23 @@ const router = express.Router();
 const Job = require("../models/Job");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// 🔹 Get jobs of logged-in employer
+router.get("/my-jobs", authMiddleware, async (req, res, next) => {
+  try {
+    console.log("User ID:", req.user._id); // debug
+
+    const jobs = await Job.find({ createdBy: req.user._id });
+
+    res.json(jobs);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // 🔹 Create job
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const { title, company, location } = req.body;
+    const { title, company, location } = req.boday;
 
     if (!title || !company || !location) {
       res.status(400);
