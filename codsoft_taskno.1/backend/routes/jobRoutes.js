@@ -19,7 +19,7 @@ router.get("/my-jobs", authMiddleware, async (req, res, next) => {
 // 🔹 Create job
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const { title, company, location } = req.boday;
+    const { title, company, location } = req.body;
 
     if (!title || !company || !location) {
       res.status(400);
