@@ -12,10 +12,11 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ message: "base64 and mimeType are required" });
     }
 
-    // Only PDF is natively supported by Claude as a document block.
-    // For DOCX we send it as a base64 image workaround isn't possible,
-    // so we fall back to telling Claude it's a PDF (user should upload PDF ideally).
-    const supportedMime = mimeType === "application/pdf" ? "application/pdf" : null;
+    if (mimeType !== "application/pdf") {
+      return res.status(400).json({
+        message: "Please upload a PDF file. DOCX format is not supported for AI analysis yet."
+      });
+    }
 
     const jobListText = Array.isArray(jobs) && jobs.length > 0
       ? jobs.map((j, i) =>
@@ -23,54 +24,47 @@ router.post("/", authMiddleware, async (req, res, next) => {
         ).join("\n")
       : "No jobs available currently.";
 
-    let messages;
-
-    if (supportedMime === "application/pdf") {
-      // Send as document block (Claude natively reads PDFs)
-      messages = [
+    const requestBody = {
+      contents: [
         {
-          role: "user",
-          content: [
+          parts: [
             {
-              type: "document",
-              source: { type: "base64", media_type: "application/pdf", data: base64 }
+              inline_data: {
+                mime_type: "application/pdf",
+                data: base64
+              }
             },
             {
-              type: "text",
               text: buildPrompt(jobListText)
             }
           ]
         }
-      ];
-    } else {
-      // For DOCX: Claude can't read binary DOCX, so ask user to convert.
-      return res.status(400).json({
-        message: "Please upload a PDF file. DOCX format is not supported for AI analysis yet."
-      });
-    }
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1500
+      }
+    };
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "claude-opus-4-5",
-        max_tokens: 1500,
-        messages
-      })
+      body: JSON.stringify(requestBody)
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Anthropic error:", data);
+      console.error("Gemini error:", data);
       return res.status(502).json({ message: data.error?.message || "AI analysis failed" });
     }
 
-    const text = data.content?.map(b => b.text || "").join("") || "";
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     let parsed;
     try {
