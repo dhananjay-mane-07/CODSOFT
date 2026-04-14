@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const fetch = require("node-fetch");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // POST /api/analyze-resume
@@ -45,7 +44,6 @@ router.post("/", authMiddleware, async (req, res, next) => {
       ];
     } else {
       // For DOCX: Claude can't read binary DOCX, so ask user to convert.
-      // We still attempt with a text-only prompt and note the limitation.
       return res.status(400).json({
         message: "Please upload a PDF file. DOCX format is not supported for AI analysis yet."
       });
