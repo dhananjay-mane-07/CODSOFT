@@ -4,6 +4,24 @@ import "../App.css";
 
 const BASE_URL = "https://codsoft-q1jf.onrender.com/api";
 
+const response = await fetch(`${BASE_URL}/analyze-resume`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    base64: base64Data,
+    mimeType: file.type,
+    jobs: availableJobs
+  })
+});
+
+console.log("Response status:", response.status);
+const data = await response.json();
+console.log("Response data:", data);  // Add this
+if (!response.ok) throw new Error(data.message || "Analysis failed");
+
 export default function ResumeUpload() {
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
@@ -42,7 +60,8 @@ export default function ResumeUpload() {
       reader.onerror = () => rej(new Error("Read failed"));
       reader.readAsDataURL(f);
     });
-
+  
+  
   const analyzeResume = async () => {
     if (!file) { alert("Please upload your resume first."); return; }
     if (file.type !== "application/pdf") {
