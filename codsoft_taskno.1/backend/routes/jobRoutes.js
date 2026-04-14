@@ -4,7 +4,20 @@ const Job = require("../models/Job");
 const Application = require("../models/Application");
 const authMiddleware = require("../middleware/authMiddleware");
 
-// 🔹 Create job (employer only)
+// 🔹 Get jobs of logged-in employer
+router.get("/my-jobs", authMiddleware, async (req, res, next) => {
+  try {
+    console.log("User ID:", req.user._id); // debug
+
+    const jobs = await Job.find({ createdBy: req.user._id });
+
+    res.json(jobs);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 🔹 Create job
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
     const { title, company, location, description, eligibility, skills, jobType, salary } = req.body;
