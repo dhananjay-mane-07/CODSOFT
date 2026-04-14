@@ -14,23 +14,23 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // routes imports
-const authRoutes = require("./routes/authRoutes");
-const jobRoutes = require("./routes/jobRoutes");
+const authRoutes        = require("./routes/authRoutes");
+const jobRoutes         = require("./routes/jobRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
-const testRoutes = require("./routes/testRoute");
-const profileRoutes = require("./routes/profileRoutes");
+const testRoutes        = require("./routes/testRoute");
+const profileRoutes     = require("./routes/profileRoutes");
+const analyzeRoutes     = require("./routes/analyzeRoute");
 
 // routes usage
-app.use("/api/auth", authRoutes);
-app.use("/api/jobs", jobRoutes);
-app.use("/api/applications", applicationRoutes);
-app.use("/api/test", testRoutes);
-app.use("/api/profile", profileRoutes);
+app.use("/api/auth",           authRoutes);
+app.use("/api/jobs",           jobRoutes);
+app.use("/api/applications",   applicationRoutes);
+app.use("/api/test",           testRoutes);
+app.use("/api/profile",        profileRoutes);
+app.use("/api/analyze-resume", analyzeRoutes);
 
 // root route
-app.get("/", (req, res) => {
-  res.send("Job Board API Running");
-});
+app.get("/", (req, res) => res.send("Job Board API Running"));
 
 // error handling middleware (must be after routes)
 const errorMiddleware = require("./middleware/errorMiddleware");
