@@ -4,24 +4,6 @@ import "../App.css";
 
 const BASE_URL = "https://codsoft-q1jf.onrender.com/api";
 
-const response = await fetch(`${BASE_URL}/analyze-resume`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    base64: base64Data,
-    mimeType: file.type,
-    jobs: availableJobs
-  })
-});
-
-console.log("Response status:", response.status);
-const data = await response.json();
-console.log("Response data:", data);  // Add this
-if (!response.ok) throw new Error(data.message || "Analysis failed");
-
 export default function ResumeUpload() {
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
@@ -30,6 +12,7 @@ export default function ResumeUpload() {
   const [jobs, setJobs] = useState([]);
   const [applyingJobId, setApplyingJobId] = useState(null);
   const [appliedIds, setAppliedIds] = useState([]);
+  const [errorMsg, setErrorMsg] = useState(null);
   const fileRef = useRef();
 
   const handleFile = (f) => {
@@ -51,6 +34,7 @@ export default function ResumeUpload() {
     }
     setFile(f);
     setAnalysis(null);
+    setErrorMsg(null);
   };
 
   const readFileAsBase64 = (f) =>
@@ -60,8 +44,7 @@ export default function ResumeUpload() {
       reader.onerror = () => rej(new Error("Read failed"));
       reader.readAsDataURL(f);
     });
-  
-  
+
   const analyzeResume = async () => {
     if (!file) { alert("Please upload your resume first."); return; }
     if (file.type !== "application/pdf") {
@@ -71,15 +54,34 @@ export default function ResumeUpload() {
 
     setAnalyzing(true);
     setAnalysis(null);
+    setErrorMsg(null);
 
     try {
-      const availableJobs = await getJobs();
-      setJobs(availableJobs);
+      // Step 1: fetch jobs
+      let availableJobs = [];
+      try {
+        availableJobs = await getJobs();
+        setJobs(availableJobs);
+        console.log("Jobs fetched:", availableJobs.length);
+      } catch (jobErr) {
+        console.warn("Could not fetch jobs (continuing without them):", jobErr.message);
+      }
 
+      // Step 2: read file
       const base64Data = await readFileAsBase64(file);
-      const token = localStorage.getItem("token");
+      console.log("Base64 length:", base64Data.length);
 
-      // Call OUR backend proxy — not Anthropic directly
+      // Step 3: get token
+      const token = localStorage.getItem("token");
+      console.log("Token present:", !!token);
+
+      if (!token) {
+        setErrorMsg("You are not logged in. Please log in and try again.");
+        return;
+      }
+
+      // Step 4: call backend
+      console.log("Calling:", `${BASE_URL}/analyze-resume`);
       const response = await fetch(`${BASE_URL}/analyze-resume`, {
         method: "POST",
         headers: {
@@ -93,12 +95,19 @@ export default function ResumeUpload() {
         })
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Analysis failed");
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || `Server error: ${response.status}`);
+      }
+
       setAnalysis(data);
 
     } catch (err) {
-      alert("Analysis failed: " + err.message);
+      console.error("Analysis error:", err);
+      setErrorMsg(err.message || "Analysis failed. Check console for details.");
     } finally {
       setAnalyzing(false);
     }
@@ -178,6 +187,21 @@ export default function ResumeUpload() {
         >
           {analyzing ? "🔍 Analyzing Resume..." : "✨ Analyze with AI"}
         </button>
+
+        {/* Error Message Box */}
+        {errorMsg && (
+          <div style={{
+            marginTop: "16px",
+            padding: "14px 18px",
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            borderRadius: "8px",
+            color: "#991b1b",
+            fontSize: "14px"
+          }}>
+            ❌ <strong>Error:</strong> {errorMsg}
+          </div>
+        )}
       </div>
 
       {analysis && !analysis.error && (
