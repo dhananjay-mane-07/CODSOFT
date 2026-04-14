@@ -7,10 +7,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 // 🔹 Get jobs of logged-in employer
 router.get("/my-jobs", authMiddleware, async (req, res, next) => {
   try {
-    console.log("User ID:", req.user._id); // debug
-
     const jobs = await Job.find({ createdBy: req.user._id });
-
     res.json(jobs);
   } catch (err) {
     next(err);
@@ -55,11 +52,11 @@ router.get("/my", authMiddleware, async (req, res, next) => {
   }
 });
 
-// 🔹 Get applicants for a specific job (employer)
+// 🔹 Get applicants for a specific job (employer) — includes profileImage
 router.get("/:id/applicants", authMiddleware, async (req, res, next) => {
   try {
     const applications = await Application.find({ job: req.params.id })
-      .populate("applicant", "name email");
+      .populate("applicant", "name email profileImage mobile education skills");
     res.json(applications);
   } catch (err) {
     next(err);

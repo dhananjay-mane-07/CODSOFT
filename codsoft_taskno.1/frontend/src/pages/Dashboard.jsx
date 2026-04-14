@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import  jwtDecode  from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import { createJob, getMyJobs, getApplicantsByJob } from "../services/api";
 import "../App.css";
+
+const BASE_URL = "https://codsoft-q1jf.onrender.com/api";
 
 export default function Dashboard() {
   const [form, setForm] = useState({
@@ -15,6 +17,10 @@ export default function Dashboard() {
   const [role, setRole] = useState("");
   const [userName, setUserName] = useState("");
   const [posting, setPosting] = useState(false);
+
+  // Applicant profile modal
+  const [viewingProfile, setViewingProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,6 +79,24 @@ export default function Dashboard() {
       setShowApplicants(true);
     } catch {
       alert("Failed to load applicants");
+    }
+  };
+
+  const handleViewApplicantProfile = async (applicantId) => {
+    setProfileLoading(true);
+    setViewingProfile(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/profile/${applicantId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setViewingProfile(data);
+    } catch (err) {
+      alert("Could not load profile: " + err.message);
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -163,20 +187,107 @@ export default function Dashboard() {
                 <div className="applicant-list">
                   {selectedApplicants.map((app) => (
                     <div key={app._id} className="applicant-card">
-                      <div>
-                        <h4>{app.applicant?.name || "Applicant"}</h4>
-                        <p style={{ color: "#555", fontSize: "14px" }}>{app.applicant?.email}</p>
-                        <span className="status-badge" style={{ marginTop: "6px", display: "inline-block" }}>
-                          {app.status || "Applied"}
-                        </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        {/* Profile avatar */}
+                        <div
+                          style={{
+                            width: "48px", height: "48px", borderRadius: "50%",
+                            overflow: "hidden", border: "2px solid #e2e8f0",
+                            background: "#f1f5f9", display: "flex",
+                            alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {app.applicant?.profileImage ? (
+                            <img src={app.applicant.profileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: "24px" }}>👤</span>
+                          )}
+                        </div>
+                        <div>
+                          <h4 style={{ marginBottom: "2px" }}>{app.applicant?.name || "Applicant"}</h4>
+                          <p style={{ color: "#555", fontSize: "14px" }}>{app.applicant?.email}</p>
+                          <span className="status-badge" style={{ marginTop: "4px", display: "inline-block" }}>
+                            {app.status || "Applied"}
+                          </span>
+                        </div>
                       </div>
-                      <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="primary-btn">
-                        📄 View Resume
-                      </a>
+
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                        {/* View Profile button */}
+                        <button
+                          className="secondary-btn"
+                          onClick={() => handleViewApplicantProfile(app.applicant?._id)}
+                          disabled={!app.applicant?._id}
+                        >
+                          👤 View Profile
+                        </button>
+                        {/* View Resume */}
+                        <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="primary-btn"
+                          style={{ textDecoration: "none", display: "inline-block" }}>
+                          📄 Resume
+                        </a>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Applicant Profile Modal */}
+          {(profileLoading || viewingProfile) && (
+            <div className="modal-overlay" onClick={() => setViewingProfile(null)}>
+              <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "500px" }}>
+                <button className="modal-close" onClick={() => setViewingProfile(null)}>✕</button>
+
+                {profileLoading ? (
+                  <p className="center-msg" style={{ padding: "40px 0" }}>Loading profile...</p>
+                ) : viewingProfile && (
+                  <>
+                    {/* Avatar + name */}
+                    <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                      <div style={{
+                        width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden",
+                        border: "3px solid #2563eb", margin: "0 auto 12px", background: "#e2e8f0",
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                      }}>
+                        {viewingProfile.profileImage
+                          ? <img src={viewingProfile.profileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          : <span style={{ fontSize: "36px" }}>👤</span>
+                        }
+                      </div>
+                      <h2 style={{ marginBottom: "4px" }}>{viewingProfile.name}</h2>
+                      <p style={{ color: "#2563eb" }}>{viewingProfile.email}</p>
+                    </div>
+
+                    {viewingProfile.mobile && (
+                      <div className="modal-section">
+                        <h4>📱 Mobile</h4>
+                        <p>{viewingProfile.mobile}</p>
+                      </div>
+                    )}
+
+                    {viewingProfile.education && (
+                      <div className="modal-section">
+                        <h4>🎓 Education</h4>
+                        <p>{viewingProfile.education}</p>
+                      </div>
+                    )}
+
+                    {viewingProfile.skills?.length > 0 && (
+                      <div className="modal-section">
+                        <h4>🛠 Skills</h4>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                          {viewingProfile.skills.map((s, i) => (
+                            <span key={i} className="skill-tag">{s}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           )}
         </>
@@ -198,6 +309,9 @@ export default function Dashboard() {
             </a>
             <a href="/my-applications" className="secondary-btn" style={{ textDecoration: "none", textAlign: "center" }}>
               📋 My Applications
+            </a>
+            <a href="/profile" className="secondary-btn" style={{ textDecoration: "none", textAlign: "center" }}>
+              👤 My Profile
             </a>
           </div>
         </div>

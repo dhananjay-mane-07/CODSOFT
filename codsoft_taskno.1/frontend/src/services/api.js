@@ -83,7 +83,7 @@ export const getApplicantsByJob = async (jobId) => {
   return data;
 };
 
-// ─── APPLICATIONS ────────────────────────────────────────────────────────────
+// ─── APPLICATIONS ─────────────────────────────────────────────────────────────
 
 export const applyToJob = async (jobId, formData) => {
   const res = await fetch(`${BASE_URL}/applications/${jobId}`, {
@@ -102,5 +102,36 @@ export const getMyApplications = async () => {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Failed to fetch applications");
+  return data;
+};
+
+// ─── PROFILE ─────────────────────────────────────────────────────────────────
+
+export const getMyProfile = async () => {
+  const res = await fetch(`${BASE_URL}/profile`, {
+    headers: authHeaders()
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to fetch profile");
+  return data;
+};
+
+export const updateMyProfile = async (profileData) => {
+  const res = await fetch(`${BASE_URL}/profile`, {
+    method: "PUT",
+    headers: jsonHeaders(),
+    body: JSON.stringify(profileData)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to update profile");
+  return data;
+};
+
+export const getUserProfile = async (userId) => {
+  const res = await fetch(`${BASE_URL}/profile/${userId}`, {
+    headers: authHeaders()
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to fetch user profile");
   return data;
 };

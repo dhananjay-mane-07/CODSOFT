@@ -6,6 +6,7 @@ import Jobs from "./pages/Jobs";
 import Dashboard from "./pages/Dashboard";
 import MyApplications from "./pages/MyApplications";
 import ResumeUpload from "./pages/ResumeUpload";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import "./App.css";
@@ -30,6 +31,9 @@ function App() {
         } />
         <Route path="/resume-upload" element={
           <ProtectedRoute><ResumeUpload /></ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute><Profile /></ProtectedRoute>
         } />
       </Routes>
     </BrowserRouter>
