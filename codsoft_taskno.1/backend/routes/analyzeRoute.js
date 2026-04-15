@@ -72,7 +72,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     console.log("Gemini response status:", response.status);
 
     const data = await response.json();
-    console.log("Gemini response body:", JSON.stringify(data).substring(0, 500));
+    console.log("Gemini response data:", JSON.stringify(data).substring(0, 200));
 
     if (!response.ok) {
       console.error("Gemini API error:");
@@ -84,9 +84,11 @@ router.post("/", authMiddleware, async (req, res, next) => {
       if (response.status === 400) {
         errorMessage = "Invalid request format: " + (data.error?.message || "Check request body");
       } else if (response.status === 401 || response.status === 403) {
-        errorMessage = "API key issue: Key may be invalid, expired, or disabled. Please regenerate your API key.";
+        errorMessage = "API key issue: Key may be invalid, expired, or disabled.";
       } else if (response.status === 404) {
-        errorMessage = "Model not found: gemini-2.5-flash may not be available yet";
+        errorMessage = "Model not found. Please check model name.";
+      } else if (response.status === 429) {
+        errorMessage = "Rate limited. Please try again later.";
       } else {
         errorMessage = data.error?.message || errorMessage;
       }
@@ -95,14 +97,38 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(502).json({ message: errorMessage });
     }
 
+    // Extract text from Gemini response
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    console.log("Gemini text preview:", text.slice(0, 100));
+    console.log("Gemini text response:", text);
+
+    if (!text) {
+      console.error("No text content in Gemini response");
+      return res.status(502).json({ message: "No response from AI model" });
+    }
 
     let parsed;
     try {
-      parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
-    } catch {
-      parsed = { error: "Could not parse AI response.", raw: text };
+      // Remove markdown code blocks and parse JSON
+      const cleanedText = text.replace(/```json\n?|```\n?/g, "").trim();
+      console.log("Cleaned text:", cleanedText.substring(0, 200));
+      
+      parsed = JSON.parse(cleanedText);
+      
+      // Validate required fields
+      if (!parsed.name || parsed.atsScore === undefined) {
+        throw new Error("Missing required fields: name, atsScore");
+      }
+      
+      console.log("Successfully parsed AI response");
+      console.log("Recommended jobs:", parsed.recommendedJobs?.length || 0);
+      
+    } catch (parseErr) {
+      console.error("JSON Parse Error:", parseErr.message);
+      console.error("Raw text:", text.substring(0, 500));
+      return res.status(502).json({ 
+        error: "Could not parse AI response. Please try again.",
+        details: parseErr.message
+      });
     }
 
     res.json(parsed);

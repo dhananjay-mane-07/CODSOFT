@@ -123,10 +123,17 @@ function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Analysis failed");
+        console.error("Backend error:", data);
+        throw new Error(data.message || data.error || "Analysis failed");
       }
 
-      setAnalysis(data);
+      console.log("Analysis result:", data);
+
+      if (data.error) {
+        setAnalysis({ error: data.error });
+      } else {
+        setAnalysis(data);
+      }
     } catch (err) {
       alert("Analysis failed: " + err.message);
     } finally {
