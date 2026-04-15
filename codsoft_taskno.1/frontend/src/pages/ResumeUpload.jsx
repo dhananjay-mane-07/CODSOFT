@@ -202,7 +202,16 @@ export default function ResumeUpload() {
             ❌ <strong>Error:</strong> {errorMsg}
           </div>
         )}
-      </div>
+      cd backend
+      git add -A
+      git commit -m "Revert to Gemini API"
+      git push      cd backend
+      git add -A
+      git commit -m "Revert to Gemini API"
+      git push      cd backend
+      git add -A
+      git commit -m "Revert to Gemini API"
+      git push      </div>
 
       {analysis && !analysis.error && (
         <>
