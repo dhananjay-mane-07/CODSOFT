@@ -15,6 +15,14 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ message: "base64 and mimeType are required" });
     }
 
+    // Validate base64 encoding
+    if (typeof base64 !== 'string' || base64.length === 0) {
+      console.error("Invalid base64: not a string or empty");
+      return res.status(400).json({ message: "Invalid PDF base64 encoding" });
+    }
+
+    console.log(`PDF size: ${(base64.length / 1024 / 1024).toFixed(2)}MB, Type: ${mimeType}`);
+
     // Convert DOCX to PDF note - for now, only accept PDF
     const allowedMimeTypes = ["application/pdf"];
     if (!allowedMimeTypes.includes(mimeType)) {
@@ -47,7 +55,8 @@ router.post("/", authMiddleware, async (req, res, next) => {
       ],
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 1500
+        maxOutputTokens: 2500,
+        responseMimeType: "application/json"
       }
     };
 
@@ -112,19 +121,34 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
     // Extract text from Gemini response
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    console.log("Gemini text response:", text);
+    console.log("Gemini raw response (first 500 chars):", text.substring(0, 500));
 
     if (!text) {
-      console.error("No text content in Gemini response");
-      return res.status(502).json({ message: "No response from AI model" });
+      console.error("No text content in Gemini response. Full response:", JSON.stringify(data, null, 2));
+      return res.status(502).json({ message: "No response from AI model - PDF may not have been processed correctly" });
     }
 
     let parsed;
     try {
-      // Remove markdown code blocks and parse JSON
-      const cleanedText = text.replace(/```json\n?|```\n?/g, "").trim();
-      console.log("Cleaned text:", cleanedText.substring(0, 200));
+      // Try multiple cleaning patterns for different response formats
+      let cleanedText = text;
       
+      // Remove markdown code blocks
+      cleanedText = cleanedText.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+      
+      // Remove any trailing/leading whitespace
+      cleanedText = cleanedText.trim();
+      
+      // If the response looks like an error message, return it
+      if (cleanedText.toLowerCase().includes("error") || cleanedText.toLowerCase().includes("unable")) {
+        console.error("AI response indicates error:", cleanedText.substring(0, 200));
+        return res.status(502).json({ 
+          error: "AI analysis failed",
+          message: cleanedText.substring(0, 200)
+        });
+      }
+      
+      console.log("Attempting to parse cleaned text (first 200 chars):", cleanedText.substring(0, 200));
       parsed = JSON.parse(cleanedText);
       
       // Validate required fields
@@ -132,15 +156,17 @@ router.post("/", authMiddleware, async (req, res, next) => {
         throw new Error("Missing required fields: name, atsScore");
       }
       
-      console.log("Successfully parsed AI response");
+      console.log("✅ Successfully parsed AI response");
       console.log("Recommended jobs:", parsed.recommendedJobs?.length || 0);
       
     } catch (parseErr) {
-      console.error("JSON Parse Error:", parseErr.message);
-      console.error("Raw text:", text.substring(0, 500));
+      console.error("❌ JSON Parse Error:", parseErr.message);
+      console.error("Full raw text received:", text);
+      console.error("Cleaned text would have been:", text.replace(/```json\n?|```\n?/g, "").trim().substring(0, 500));
       return res.status(502).json({ 
-        error: "Could not parse AI response. Please try again.",
-        details: parseErr.message
+        error: "Could not parse AI response - PDF parsing may have failed",
+        details: parseErr.message,
+        received: text.substring(0, 300)
       });
     }
 
