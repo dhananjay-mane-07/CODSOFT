@@ -59,9 +59,9 @@ router.post("/", authMiddleware, async (req, res, next) => {
     }
 
     // Using Gemini 2.5 Flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    console.log("Calling Gemini API...");
+    const url = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    console.log("Calling Gemini API with 2.5-flash model...");
+    console.log("URL:", url.substring(0, 80) + "...[key hidden]");
 
     const response = await fetch(url, {
       method: "POST",
@@ -72,11 +72,26 @@ router.post("/", authMiddleware, async (req, res, next) => {
     console.log("Gemini response status:", response.status);
 
     const data = await response.json();
+    console.log("Gemini response body:", JSON.stringify(data).substring(0, 500));
 
     if (!response.ok) {
-      console.error("Gemini error response:", JSON.stringify(data, null, 2));
-      const errorMessage = data.error?.message || "AI analysis failed";
-      console.error("Gemini error message:", errorMessage);
+      console.error("Gemini API error:");
+      console.error("Status:", response.status);
+      console.error("Error details:", JSON.stringify(data, null, 2));
+      
+      // Better error message based on status code
+      let errorMessage = "AI analysis failed";
+      if (response.status === 400) {
+        errorMessage = "Invalid request format: " + (data.error?.message || "Check request body");
+      } else if (response.status === 401 || response.status === 403) {
+        errorMessage = "API key issue: Key may be invalid, expired, or disabled. Please regenerate your API key.";
+      } else if (response.status === 404) {
+        errorMessage = "Model not found: gemini-2.5-flash may not be available yet";
+      } else {
+        errorMessage = data.error?.message || errorMessage;
+      }
+      
+      console.error("Final error message:", errorMessage);
       return res.status(502).json({ message: errorMessage });
     }
 
