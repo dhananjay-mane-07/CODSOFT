@@ -103,73 +103,30 @@ function Home() {
     setAnalysis(null);
 
     try {
-      const jobListText = allJobs
-        .map((j, i) =>
-          `${i + 1}. ID: ${j._id} | Title: ${j.title} | Company: ${j.company} | Location: ${j.location} | Skills: ${(j.skills || []).join(", ")} | Eligibility: ${j.eligibility || "N/A"}`
-        )
-        .join("\n");
-
       const base64Data = await readFileAsBase64(file);
       const mediaType = file.type;
 
-      const userContent = [
-        {
-          type: "document",
-          source: { type: "base64", media_type: mediaType, data: base64Data },
-        },
-        {
-          type: "text",
-          text: `You are an expert ATS resume analyzer and career counselor.
-
-Analyze the resume above and return a JSON object (NO markdown, no backticks, just raw JSON) with exactly these fields:
-
-{
-  "name": "Candidate's name",
-  "atsScore": <number 0-100>,
-  "summary": "2-3 sentence professional summary of the candidate",
-  "skills": ["skill1", "skill2", ...],
-  "strengths": ["strength1", "strength2", ...],
-  "improvements": ["area1", "area2", ...],
-  "experienceLevel": "Fresher | Junior | Mid-level | Senior",
-  "recommendedJobs": [
-    {
-      "jobId": "<ID from list>",
-      "title": "<job title>",
-      "company": "<company>",
-      "matchScore": <number 0-100>,
-      "reason": "Why this job matches the candidate"
-    }
-  ]
-}
-
-Available jobs to recommend from (pick top matches only, max 5):
-${jobListText || "No jobs available currently."}
-
-Base your job recommendations on skill overlap, eligibility match, and experience level. ATS score should reflect formatting quality, keyword density, clarity, and completeness.`,
-        },
-      ];
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      // Call your backend endpoint instead of Anthropic API
+      const response = await fetch("https://codsoft-q1jf.onrender.com/api/analyze-resume", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: userContent }],
+          base64: base64Data,
+          mimeType: mediaType,
+          jobs: allJobs
         }),
       });
 
       const data = await response.json();
-      const text = data.content?.map((b) => b.text || "").join("") || "";
 
-      let parsed;
-      try {
-        parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
-      } catch {
-        parsed = { error: "Could not parse AI response.", raw: text };
+      if (!response.ok) {
+        throw new Error(data.message || "Analysis failed");
       }
 
-      setAnalysis(parsed);
+      setAnalysis(data);
     } catch (err) {
       alert("Analysis failed: " + err.message);
     } finally {
