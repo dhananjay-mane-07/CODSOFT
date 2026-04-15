@@ -71,7 +71,21 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
     console.log("Gemini response status:", response.status);
 
-    const data = await response.json();
+    // Handle 404 before trying to parse JSON
+    if (response.status === 404) {
+      console.error("Model not found (404): gemini-1.5-flash endpoint issue");
+      return res.status(502).json({ message: "Model not found. The Gemini API endpoint may be unavailable." });
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonErr) {
+      console.error("Failed to parse JSON response:", jsonErr.message);
+      console.error("Response status:", response.status);
+      return res.status(502).json({ message: "Invalid response from Gemini API" });
+    }
+
     console.log("Gemini response data:", JSON.stringify(data).substring(0, 200));
 
     if (!response.ok) {
@@ -84,11 +98,9 @@ router.post("/", authMiddleware, async (req, res, next) => {
       if (response.status === 400) {
         errorMessage = "Invalid request format: " + (data.error?.message || "Check request body");
       } else if (response.status === 401 || response.status === 403) {
-        errorMessage = "API key issue: Key may be invalid, expired, or disabled.";
-      } else if (response.status === 404) {
-        errorMessage = "Model not found. Please check model name.";
+        errorMessage = "API key issue: Please verify your API key is valid and has quota.";
       } else if (response.status === 429) {
-        errorMessage = "Rate limited. Please try again later.";
+        errorMessage = "Rate limited. Please try again in a moment.";
       } else {
         errorMessage = data.error?.message || errorMessage;
       }
