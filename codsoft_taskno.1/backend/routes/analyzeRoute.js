@@ -50,7 +50,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     };
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b:generateContent?key=${apiKey}`;
 
     console.log("Calling Gemini API...");
 
