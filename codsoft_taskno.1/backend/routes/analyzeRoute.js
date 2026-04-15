@@ -58,8 +58,8 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(500).json({ message: "API key not configured" });
     }
 
-    // Using Gemini 1.5 Flash (stable model)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Using Gemini 2.5 Flash
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     console.log("Calling Gemini API...");
 
