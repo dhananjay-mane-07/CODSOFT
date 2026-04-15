@@ -59,7 +59,8 @@ router.post("/", authMiddleware, async (req, res, next) => {
     }
 
     // Using Gemini 2.5 Flash
-    const url = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // Correct version (v1beta)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     console.log("Calling Gemini API with 2.5-flash model...");
     console.log("URL:", url.substring(0, 80) + "...[key hidden]");
 
