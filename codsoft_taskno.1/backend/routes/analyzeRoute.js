@@ -6,6 +6,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Body: { base64: "...", mimeType: "application/pdf", jobs: [...] }
 router.post("/", authMiddleware, async (req, res, next) => {
   try {
+    console.log("=== ANALYZE ROUTE HIT ===");
+    console.log("GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY);
+
     const { base64, mimeType, jobs } = req.body;
 
     if (!base64 || !mimeType) {
@@ -49,22 +52,25 @@ router.post("/", authMiddleware, async (req, res, next) => {
     const apiKey = process.env.GEMINI_API_KEY;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
+    console.log("Calling Gemini API...");
+
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
     });
+
+    console.log("Gemini response status:", response.status);
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini error:", data);
+      console.error("Gemini error:", JSON.stringify(data));
       return res.status(502).json({ message: data.error?.message || "AI analysis failed" });
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    console.log("Gemini text preview:", text.slice(0, 100));
 
     let parsed;
     try {
@@ -76,6 +82,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     res.json(parsed);
 
   } catch (err) {
+    console.error("=== ROUTE ERROR ===", err);
     next(err);
   }
 });
