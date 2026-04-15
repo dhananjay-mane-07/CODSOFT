@@ -15,9 +15,11 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ message: "base64 and mimeType are required" });
     }
 
-    if (mimeType !== "application/pdf") {
+    // Convert DOCX to PDF note - for now, only accept PDF
+    const allowedMimeTypes = ["application/pdf"];
+    if (!allowedMimeTypes.includes(mimeType)) {
       return res.status(400).json({
-        message: "Please upload a PDF file. DOCX format is not supported for AI analysis yet."
+        message: "Only PDF files are currently supported for AI analysis. Please convert DOCX to PDF first."
       });
     }
 
@@ -50,8 +52,14 @@ router.post("/", authMiddleware, async (req, res, next) => {
     };
 
     const apiKey = process.env.GEMINI_API_KEY;
-    // Using Gemini 2.5 Flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY is not set in environment variables");
+      return res.status(500).json({ message: "API key not configured" });
+    }
+
+    // Using Gemini 1.5 Flash (stable model)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     console.log("Calling Gemini API...");
 
@@ -66,8 +74,10 @@ router.post("/", authMiddleware, async (req, res, next) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini error:", JSON.stringify(data));
-      return res.status(502).json({ message: data.error?.message || "AI analysis failed" });
+      console.error("Gemini error response:", JSON.stringify(data, null, 2));
+      const errorMessage = data.error?.message || "AI analysis failed";
+      console.error("Gemini error message:", errorMessage);
+      return res.status(502).json({ message: errorMessage });
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
